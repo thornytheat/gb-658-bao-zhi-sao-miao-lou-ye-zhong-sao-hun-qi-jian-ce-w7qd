@@ -7,6 +7,8 @@ services:
       APP_VERSION: "SF-2026.11"
       DATABASE_PATH: "/app/data/runs.sqlite3"
       TZ: "Asia/Shanghai"
+      CREDENTIAL_SECRET: "${CREDENTIAL_SECRET:-change-me-to-a-long-random-secret}"
+      DEFAULT_RETENTION_DAYS: "${DEFAULT_RETENTION_DAYS:-30}"
     volumes:
       - run-data:/app/data
 volumes:

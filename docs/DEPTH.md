@@ -14,6 +14,7 @@
 | M4 重扫判定 | 比较扫描候选并保留清晰版本 | POST /api/rescans/evaluate | `app/modules/m4_rescans/similarity.py` `app/modules/m4_rescans/decision.py` | `tests/test_m4_rescans.py` |
 | M5 混期归因 | 用页眉和页码证据裁决混期 | POST /api/mixed/evaluate | `app/modules/m5_mixed/evidence.py` `app/modules/m5_mixed/conflicts.py` | `tests/test_m5_mixed.py` |
 | M6 批次对账 | 检查四账并导出证据 | POST /api/reconcile | `app/modules/m6_batches/compare.py` `app/modules/m6_batches/exporter.py` | `tests/test_m6_batches.py` |
+| M7 留存销毁 | 登记保留期限、签发凭据、到期销毁并支持原件验真 | POST /api/retention/receive | `app/modules/m7_retention/service.py` `app/modules/m7_retention/store.py` | `tests/test_m7_retention.py` `tests/test_m7_api.py` |
 
 ## 陷阱登记
 
@@ -29,6 +30,10 @@
 | TRAP-19 | 候选顺序改变 | 先到者决定保留项 | 显式排序键保持顺序无关 | `app/modules/m3_pages/sequence.py` | `tests/test_m3_pages.py::test_selection_order_independent` |
 | TRAP-22 | 同内容多别名 | 合并顺序改变代表扫描 | 清晰度后以时间和文件名择一 | `app/modules/m4_rescans/decision.py` | `tests/test_m4_rescans.py::test_selection_is_deterministic_on_tie` |
 | TRAP-26 | 陈旧重扫晚提交 | 旧版本覆盖新版 | 版本优先于输入顺序 | `app/modules/m3_pages/sequence.py` | `tests/test_m3_pages.py::test_higher_version_wins_not_later_input` |
+| TRAP-31 | 销毁中断后重试 | 整事务回滚导致从头重销或证据缺失 | 每行独立事务提交，行级检查点记录已完成进度 | `app/modules/m7_retention/service.py` | `tests/test_m7_retention.py::test_destroy_is_resumable_after_interruption` |
+| TRAP-32 | 销毁与导入并发 | 已销毁旧清单重新落库 | content_digest 唯一约束 + 条件插入，销毁态只返回回执 | `app/modules/m7_retention/store.py` | `tests/test_m7_api.py::test_concurrent_destroy_and_receive_old_manifest_stays_destroyed` |
+| TRAP-33 | 同请求 ID 换内容 | 凭据被二次绑定到不同原文 | 请求台账绑定内容指纹，冲突返回 409 | `app/modules/m7_retention/service.py` | `tests/test_m7_api.py::test_same_request_different_content_returns_409` |
+| TRAP-34 | 销毁后仍需追责 | 只删原文则无法核验，留原文则违约 | 删除原文与隔离原值，仅留 SHA-256 摘要与 HMAC 行级签名 | `app/modules/m7_retention/crypto.py` | `tests/test_m7_retention.py::test_destroy_removes_raw_but_keeps_digest_and_signature` |
 
 ## 对账规则
 
@@ -39,4 +44,6 @@
 ## 已知不覆盖
 
 - 不读取图像二进制，感知哈希与 OCR 页眉由上游扫描软件提供。
+- M7 只销毁清单文本与隔离原值，不做图像文件销毁；核验时由责任方提交原件，系统不另存副本。
+- M7 不改动 M4 重扫采信规则，两套判定相互独立。
 

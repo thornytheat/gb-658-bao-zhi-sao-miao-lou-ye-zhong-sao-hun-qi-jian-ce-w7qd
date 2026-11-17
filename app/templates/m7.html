@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="kpis">
+  <div class="kpi"><b>留存中</b><strong>1</strong><small>批</small></div>
+  <div class="kpi"><b>销毁中</b><strong>1</strong><small>批</small></div>
+  <div class="kpi"><b>已销毁</b><strong>1</strong><small>批</small></div>
+  <div class="kpi"><b>核验依据</b><strong>39</strong><small>条</small></div>
+</section>
+<div class="grid grid--receipt">
+  <section class="panel">
+    <div class="panel__head"><h2>留存销毁台账</h2><span class="state state--ok">可核验</span></div>
+    <div class="panel__body panel__body--scroll">
+      <table class="ledger"><thead><tr><th>序号</th><th>留存标识</th><th>状态</th><th class="num">原接收数量</th></tr></thead>
+      <tbody>{% for row in rows %}<tr><td class="num">{{ loop.index }}</td><td>{{ row.key }}</td><td>{{ row.status }}</td><td class="num">{{ row.value }}</td></tr>{% endfor %}</tbody></table>
+    </div>
+  </section>
+  <section class="panel panel--evidence">
+    <div class="panel__head"><h2>验收凭据</h2><span class="panel__meta">HMAC-SHA256</span></div>
+    <div class="panel__body"><div class="evidence"><b>RETENTION_ACCEPTANCE</b><span>RECEIVE / DESTROY / VERIFY</span><code>/api/retention</code></div><pre id="result">等待运行</pre></div>
+  </section>
+  <section class="panel panel--status">
+    <div class="panel__head"><h2>销毁原则</h2><span class="panel__meta">不可还原</span></div>
+    <div class="panel__body"><div class="bar"><i style="width:70%"></i></div><div class="legend"><span>原文与隔离原值清除</span><span>仅留摘要与签名</span></div></div>
+  </section>
+</div>
+{% endblock %}
